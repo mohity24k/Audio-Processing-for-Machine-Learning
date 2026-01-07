@@ -29,6 +29,19 @@ cd Audio-Processing-for-Machine-Learning
 pip install -r requirements.txt
 ```
 
+3. Install platform-specific TTS engines:
+
+**Linux:**
+```bash
+sudo apt-get install espeak
+```
+
+**macOS:**
+No additional installation needed (uses built-in NSSpeechSynthesizer)
+
+**Windows:**
+No additional installation needed (uses built-in SAPI5)
+
 ### Usage
 
 #### Basic Usage
@@ -39,10 +52,15 @@ from tts_model import TextToSpeech
 # Create TTS instance
 tts = TextToSpeech()
 
-# Convert text to speech
+# Convert text to speech and save to file
 text = "Hello! This is a text-to-speech model."
 tts.text_to_speech(text, 'output.wav')
+
+# Or speak directly (more reliable on all platforms)
+tts.speak(text)
 ```
+
+**Note:** File saving (`text_to_speech`) may have limited support on Linux with eSpeak. For direct audio playback, use the `speak()` method which is more reliable across all platforms.
 
 #### Advanced Usage
 

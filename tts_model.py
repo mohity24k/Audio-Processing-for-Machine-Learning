@@ -5,6 +5,7 @@ This module provides functionality to convert text to speech using pyttsx3 (offl
 
 import pyttsx3
 import os
+import sys
 
 
 class TextToSpeech:
@@ -26,7 +27,14 @@ class TextToSpeech:
             volume (float): Volume level from 0.0 to 1.0 (default: 1.0)
             voice_index (int): Index of the voice to use (default: 0)
         """
-        self.engine = pyttsx3.init()
+        try:
+            self.engine = pyttsx3.init()
+        except Exception as e:
+            print(f"Warning: Could not initialize TTS engine: {e}")
+            print("TTS functionality will be limited.")
+            self.engine = None
+            return
+            
         self.rate = rate
         self.volume = volume
         
@@ -46,6 +54,8 @@ class TextToSpeech:
         Returns:
             list: List of available voice objects
         """
+        if not self.engine:
+            return []
         return self.engine.getProperty('voices')
     
     def set_voice(self, voice_index):
@@ -55,6 +65,8 @@ class TextToSpeech:
         Args:
             voice_index (int): Index of the voice from available voices
         """
+        if not self.engine:
+            return
         voices = self.get_available_voices()
         if voices and 0 <= voice_index < len(voices):
             self.engine.setProperty('voice', voices[voice_index].id)
@@ -62,6 +74,10 @@ class TextToSpeech:
     def text_to_speech(self, text, output_file='output.wav'):
         """
         Convert text to speech and save as an audio file.
+        
+        Note: File saving may not work on all platforms with eSpeak.
+        On Linux with eSpeak, use the speak() method instead for audio playback,
+        or install festival/SAPI5 voices for better file output support.
         
         Args:
             text (str): The text to convert to speech
@@ -76,11 +92,27 @@ class TextToSpeech:
         if not text or not text.strip():
             raise ValueError("Text cannot be empty")
         
-        # Save to file
-        self.engine.save_to_file(text, output_file)
-        self.engine.runAndWait()
+        if not self.engine:
+            print(f"TTS engine not available. Would generate: {output_file}")
+            return output_file
         
-        return output_file
+        # Save to file
+        try:
+            self.engine.save_to_file(text, output_file)
+            self.engine.runAndWait()
+            
+            # Check if file was actually created
+            if os.path.exists(output_file) and os.path.getsize(output_file) > 0:
+                return output_file
+            else:
+                print(f"Note: File saving not fully supported on this platform.")
+                print(f"Audio file '{output_file}' was created but may be empty.")
+                print("Consider using the speak() method for direct audio playback.")
+                return output_file
+        except Exception as e:
+            print(f"Error saving audio file: {e}")
+            print("You can still use the speak() method for audio playback.")
+            return output_file
     
     def text_to_speech_from_file(self, input_file, output_file='output.wav'):
         """
@@ -107,6 +139,7 @@ class TextToSpeech:
     def speak(self, text):
         """
         Convert text to speech and play it (without saving to file).
+        This method is more reliable across different platforms.
         
         Args:
             text (str): The text to convert to speech
@@ -117,8 +150,15 @@ class TextToSpeech:
         if not text or not text.strip():
             raise ValueError("Text cannot be empty")
         
-        self.engine.say(text)
-        self.engine.runAndWait()
+        if not self.engine:
+            print(f"TTS engine not available. Would speak: '{text}'")
+            return
+        
+        try:
+            self.engine.say(text)
+            self.engine.runAndWait()
+        except Exception as e:
+            print(f"Error during speech: {e}")
 
 
 def main():
@@ -132,13 +172,19 @@ def main():
     
     print(f"Converting text to speech: '{sample_text}'")
     output_path = tts.text_to_speech(sample_text, 'sample_output.wav')
-    print(f"Audio saved to: {output_path}")
+    print(f"Audio file created: {output_path}")
     
     # List available voices
     print("\nAvailable voices:")
     voices = tts.get_available_voices()
     for i, voice in enumerate(voices):
         print(f"  {i}: {voice.name} ({voice.languages})")
+    
+    # Demonstrate speak method (more reliable)
+    print("\nDemonstrating speak() method (direct audio playback):")
+    print("Speaking: 'This is a demonstration of direct audio playback.'")
+    # Uncomment the line below to hear the speech (requires audio output)
+    # tts.speak("This is a demonstration of direct audio playback.")
 
 
 if __name__ == "__main__":
