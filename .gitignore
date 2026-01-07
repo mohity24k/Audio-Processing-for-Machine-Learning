@@ -2,6 +2,7 @@
 *.mp3
 *.wav
 *.ogg
+*.aiff
 
 # Sample input files
 sample_input.txt

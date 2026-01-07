@@ -12,42 +12,49 @@ def example_basic_tts():
     print("Example 1: Basic Text-to-Speech")
     print("=" * 50)
     
-    tts = TextToSpeech(language='en')
+    tts = TextToSpeech()
     text = "Welcome to the Audio Processing for Machine Learning project."
-    output_file = tts.text_to_speech(text, 'example1_basic.mp3')
+    output_file = tts.text_to_speech(text, 'example1_basic.wav')
     print(f"✓ Generated audio: {output_file}")
     print()
 
 
-def example_slow_speech():
-    """Example: Slow speech for better clarity"""
+def example_speech_rate():
+    """Example: Different speech rates"""
     print("=" * 50)
-    print("Example 2: Slow Speech")
+    print("Example 2: Speech Rate Variations")
     print("=" * 50)
     
-    tts = TextToSpeech(language='en', slow=True)
+    # Slow speech
+    tts_slow = TextToSpeech(rate=100)
     text = "This is an example of slow speech for better understanding."
-    output_file = tts.text_to_speech(text, 'example2_slow.mp3')
-    print(f"✓ Generated audio: {output_file}")
+    output_file = tts_slow.text_to_speech(text, 'example2_slow.wav')
+    print(f"✓ Generated slow speech: {output_file}")
+    
+    # Fast speech
+    tts_fast = TextToSpeech(rate=200)
+    output_file = tts_fast.text_to_speech(text, 'example2_fast.wav')
+    print(f"✓ Generated fast speech: {output_file}")
     print()
 
 
-def example_multilingual():
-    """Example: Text-to-speech in different languages"""
+def example_volume_control():
+    """Example: Volume control"""
     print("=" * 50)
-    print("Example 3: Multilingual Support")
+    print("Example 3: Volume Control")
     print("=" * 50)
     
-    examples = [
-        ('en', "Hello, how are you?", 'example3_english.mp3'),
-        ('es', "Hola, ¿cómo estás?", 'example3_spanish.mp3'),
-        ('fr', "Bonjour, comment allez-vous?", 'example3_french.mp3'),
-    ]
+    text = "This demonstrates volume control in text-to-speech."
     
-    for lang, text, output in examples:
-        tts = TextToSpeech(language=lang)
-        output_file = tts.text_to_speech(text, output)
-        print(f"✓ Generated {lang} audio: {output_file}")
+    # Normal volume
+    tts_normal = TextToSpeech(volume=1.0)
+    output_file = tts_normal.text_to_speech(text, 'example3_normal.wav')
+    print(f"✓ Generated normal volume: {output_file}")
+    
+    # Lower volume
+    tts_quiet = TextToSpeech(volume=0.5)
+    output_file = tts_quiet.text_to_speech(text, 'example3_quiet.wav')
+    print(f"✓ Generated lower volume: {output_file}")
     print()
 
 
@@ -67,9 +74,30 @@ def example_from_file():
     with open('sample_input.txt', 'w', encoding='utf-8') as f:
         f.write(sample_text.strip())
     
-    tts = TextToSpeech(language='en')
-    output_file = tts.text_to_speech_from_file('sample_input.txt', 'example4_from_file.mp3')
+    tts = TextToSpeech()
+    output_file = tts.text_to_speech_from_file('sample_input.txt', 'example4_from_file.wav')
     print(f"✓ Generated audio from file: {output_file}")
+    print()
+
+
+def example_voice_selection():
+    """Example: Select different voices"""
+    print("=" * 50)
+    print("Example 5: Voice Selection")
+    print("=" * 50)
+    
+    tts = TextToSpeech()
+    voices = tts.get_available_voices()
+    
+    print(f"Available voices: {len(voices)}")
+    for i, voice in enumerate(voices[:3]):  # Show first 3 voices
+        print(f"  Voice {i}: {voice.name}")
+        tts.set_voice(i)
+        output_file = tts.text_to_speech(
+            f"This is voice number {i}.",
+            f'example5_voice{i}.wav'
+        )
+        print(f"  ✓ Generated: {output_file}")
     print()
 
 
@@ -81,9 +109,10 @@ def main():
     
     try:
         example_basic_tts()
-        example_slow_speech()
-        example_multilingual()
+        example_speech_rate()
+        example_volume_control()
         example_from_file()
+        example_voice_selection()
         
         print("=" * 50)
         print("All examples completed successfully!")
@@ -91,6 +120,8 @@ def main():
         
     except Exception as e:
         print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
